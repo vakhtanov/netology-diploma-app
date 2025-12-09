@@ -1,4 +1,4 @@
-name: CI/CD to Yandex CR + K8s
+name: netology workflow
 
 on:
   push:
@@ -18,15 +18,15 @@ jobs:
     - name: Login to Yandex Container Registry
       uses: docker/login-action@v3
       with:
-        registry: cr.yandex/${{ secrets.YC_SA_KEY }}
+        registry: cr.yandex/${{ secrets.YC_REGISTRY_ID }}
         username: json
-        password: ${{ secrets.YANDEXCLOUD_JSON }}
+        password: ${{ secrets.YC_SA_KEY }}
 
     - name: Extract Docker metadata
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: cr.yandex/${{ secrets.YC_SA_KEY }}/nginx-app  # имя приложения
+        images: cr.yandex/${{ secrets.YC_REGISTRY_ID }}/nginx-app  # имя приложения
         tags: |
           type=sha
           type=ref,event=branch
