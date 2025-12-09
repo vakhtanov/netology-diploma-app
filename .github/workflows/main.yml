@@ -3,7 +3,6 @@ name: CI/CD to Yandex CR + K8s
 on:
   push:
     branches: [ main ]
-  push:
     tags:
       - 'v*.*.*'
 
