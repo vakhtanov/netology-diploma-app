@@ -39,3 +39,35 @@ jobs:
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
+
+  deploy:
+    needs: build-push
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup kubeconfig
+      uses: azure/setup-kubectl@v4
+      with:
+        version: 'latest'
+
+    - name: Configure kubeconfig
+      run: |
+        mkdir -p $HOME/.kube
+        echo '${{ secrets.KUBE_CONFIG }}' | base64 -d > $HOME/.kube/config
+
+    - name: Get tag version
+      id: tag
+      run: echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+    - name: Deploy to K8s
+      env:
+        IMAGE_TAG: ${{ env.TAG }}
+# задаем имя приложения
+# задаем деплоймент
+# следим за разверткой приложения
+      run: |
+        IMAGE=cr.yandex/${{ secrets.YC_REGISTRY_ID }}/nginx-app:$IMAGE_TAG
+        kubectl set image deployment/nginx-app-depl nginx-app-c=$IMAGE -n default
+        kubectl rollout status deployment/nginx-app-depl -n default --timeout=300s
